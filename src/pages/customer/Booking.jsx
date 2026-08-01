@@ -3,7 +3,7 @@ import { Alert, Button, Card, Col, Form, Row, Badge } from 'react-bootstrap';
 import SeatGrid from '../../components/SeatGrid';
 import ConfirmModal from '../../components/ConfirmModal';
 import Loader from '../../components/Loader';
-import { createBooking } from '../../services/bookingService';
+import { createBooking, downloadTicket } from '../../services/bookingService';
 import { getFlightBookingPage } from '../../services/flightService';
 
 const defaultPassenger = {
@@ -45,6 +45,7 @@ export default function Booking({ flightId, initialFlight, userId, onBackToDetai
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [bookingResult, setBookingResult] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -184,18 +185,35 @@ export default function Booking({ flightId, initialFlight, userId, onBackToDetai
 
     try {
       const payload = buildBookingPayload();
-      await createBooking(payload);
+      const res = await createBooking(payload);
+      setBookingResult(res.data?.data || res.data || {});
       setSuccess('Booking created successfully.');
       setCurrentStep(4);
       setShowConfirmModal(false);
-
-      if (onBookingSuccess) {
-        onBookingSuccess();
-      }
     } catch (requestError) {
       setError(requestError?.response?.data?.message || requestError.message || 'Unable to create booking.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDownloadTicket = async (bId) => {
+    if (!bId) {
+      setError('Booking ID not available for download.');
+      return;
+    }
+    try {
+      const res = await downloadTicket(bId);
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `ticket-${bId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setSuccess('Ticket downloaded successfully!');
+    } catch (err) {
+      setError('Failed to download ticket.');
     }
   };
 
@@ -388,10 +406,41 @@ export default function Booking({ flightId, initialFlight, userId, onBackToDetai
 
       {currentStep === 4 ? (
         <Card className="shadow-sm border-0 rounded-4 border-success">
-          <Card.Body className="p-4">
-            <div className="d-flex flex-column gap-2">
-              <h2 className="h5 mb-0">Booking Confirmed</h2>
-              <p className="text-body-secondary mb-0">The booking request has been submitted successfully.</p>
+          <Card.Body className="p-5 text-center">
+            <div className="mb-4">
+              <h2 className="h4 mt-3 mb-1 text-success">Booking Confirmed!</h2>
+              <p className="text-body-secondary">Your booking request has been submitted successfully.</p>
+            </div>
+            
+            <div className="bg-light p-4 rounded-4 text-start mb-4 mx-auto" style={{ maxWidth: '500px' }}>
+              <Row className="g-3">
+                <Col xs={6}><span className="text-muted">Booking ID:</span></Col>
+                <Col xs={6} className="fw-bold">{bookingResult?.bookingId || bookingResult?.id || 'N/A'}</Col>
+                
+                <Col xs={6}><span className="text-muted">Flight No:</span></Col>
+                <Col xs={6} className="fw-bold">{flightDetails.flightNumber}</Col>
+                
+                <Col xs={6}><span className="text-muted">Passengers:</span></Col>
+                <Col xs={6} className="fw-bold">{passengerCount}</Col>
+                
+                <Col xs={6}><span className="text-muted">Seats:</span></Col>
+                <Col xs={6} className="fw-bold">{selectedSeats.join(', ')}</Col>
+                
+                <Col xs={6}><span className="text-muted">Total Fare:</span></Col>
+                <Col xs={6} className="fw-bold">{formatCurrency(totalFare)}</Col>
+                
+                <Col xs={6}><span className="text-muted">Date:</span></Col>
+                <Col xs={6} className="fw-bold">{new Date().toLocaleDateString()}</Col>
+              </Row>
+            </div>
+            
+            <div className="d-flex justify-content-center gap-3">
+              <Button variant="outline-primary" onClick={() => handleDownloadTicket(bookingResult?.bookingId || bookingResult?.id)}>
+                Download Ticket
+              </Button>
+              <Button variant="primary" onClick={onBookingSuccess}>
+                View Booking History
+              </Button>
             </div>
           </Card.Body>
         </Card>

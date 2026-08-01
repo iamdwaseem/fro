@@ -9,10 +9,16 @@ export async function customerBookings(userId) {
 }
 
 export async function downloadTicket(bookingId) {
-  // TODO: connect this to the backend ticket download endpoint once the API contract is confirmed.
   if (!bookingId) {
     throw new Error('A bookingId is required to download a ticket.');
   }
+  return api.get(`/customer/bookings/${bookingId}/ticket`, { responseType: 'blob' });
+}
 
-  throw new Error('Ticket download endpoint is not connected yet.');
+export async function adminBookings() {
+  return api.get('/admin/bookings');
+}
+
+export async function cancelBooking(bookingId) {
+  return api.patch(`/customer/bookings/${bookingId}/cancel`);
 }

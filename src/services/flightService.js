@@ -17,3 +17,11 @@ export async function searchFlights({ departureAirportId, arrivalAirportId, date
 export async function getFlightBookingPage(flightId) {
   return api.get(`/flights/${flightId}/booking`);
 }
+
+export async function addFlight(payload) {
+  return api.post('/admin/flights', payload);
+}
+
+export async function updateFlightStatus(payload) {
+  return api.patch('/admin/flights/status', payload);
+}

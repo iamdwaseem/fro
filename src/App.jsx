@@ -28,13 +28,7 @@ function AppRoutes() {
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]} />}>
-          <Route element={<AdminLayout />}>
-            <Route path="admin" element={<RouteStub title="Admin Dashboard" description="Admin pages will be added in later phases." />} />
-            <Route path="admin/airports" element={<RouteStub title="Airport Management" description="Airport management page will be added in Phase 5." />} />
-            <Route path="admin/airplanes" element={<RouteStub title="Airplane Management" description="Airplane management page will be added in Phase 5." />} />
-            <Route path="admin/flights" element={<RouteStub title="Flight Management" description="Flight management pages will be added in Phase 5." />} />
-            <Route path="admin/bookings" element={<RouteStub title="Booking History" description="Admin booking history will be added in Phase 5." />} />
-          </Route>
+          <Route path="admin" element={<AdminLayout />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={[USER_ROLES.CUSTOMER]} />}>
