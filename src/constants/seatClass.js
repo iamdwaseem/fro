@@ -1,0 +1,5 @@
+export const SEAT_CLASS = {
+  ECONOMY: 'ECONOMY',
+  BUSINESS: 'BUSINESS',
+  FIRST_CLASS: 'FIRST_CLASS',
+};
